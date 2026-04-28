@@ -97,6 +97,14 @@ class JarvisAI:
                 )
             )
 
+            if not response.choices:
+                return {
+                    "response": "No response generated.",
+                    "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+                    "timestamp": datetime.now().isoformat(),
+                    "error": True,
+                }
+
             assistant_reply = response.choices[0].message.content
             usage = response.usage
 
@@ -107,9 +115,9 @@ class JarvisAI:
             return {
                 "response": assistant_reply,
                 "usage": {
-                    "prompt_tokens": usage.prompt_tokens,
-                    "completion_tokens": usage.completion_tokens,
-                    "total_tokens": usage.total_tokens,
+                    "prompt_tokens": usage.prompt_tokens if usage else 0,
+                    "completion_tokens": usage.completion_tokens if usage else 0,
+                    "total_tokens": usage.total_tokens if usage else 0,
                 },
                 "timestamp": datetime.now().isoformat(),
             }
@@ -148,7 +156,7 @@ class JarvisAI:
         full_response = ""
         try:
             for chunk in stream:
-                if chunk.choices[0].delta.content is not None:
+                if chunk.choices and chunk.choices[0].delta.content is not None:
                     content = chunk.choices[0].delta.content
                     full_response += content
                     yield content
